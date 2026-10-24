@@ -90,6 +90,7 @@
 #define IS_ENABLED(k) [[NSUserDefaults standardUserDefaults] boolForKey:k]
 #define INTFORVAL(v) [[NSUserDefaults standardUserDefaults] integerForKey:v]
 #define FixPlaybackIssues @"YouModFixPlaybackIssues"
+#define YouTubeFocusDurationIndex @"YouModYouTubeFocusDurationIndex"
 #define MuteButton @"YouModMuteButton"
 #define SpeedButton @"YouModSpeedButton"
 #define ShareButton @"YouModShareButton"
@@ -771,6 +772,8 @@ extern void YMPushOverlayButtonOrder(id settingsVC, id parentResponder);
 extern NSArray<YMSearchRow *> *sbSearchRows(UIViewController *host);
 
 extern NSBundle *YouModBundle();
+extern void YMYouTubeFocusStartSession(NSInteger durationIndex);
+extern void YMYouTubeFocusStopSession(void);
 extern UIImage *YouModYTIconImage(NSInteger iconType, BOOL useCustomColor, UIColor *customColor);
 extern NSArray *getAllSystemLanguageTitles();
 extern NSArray *getAllSystemLanguageValues();
