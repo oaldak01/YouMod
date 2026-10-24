@@ -467,6 +467,22 @@ static NSString *GetCacheSize() { // YTLite - @dayanch96
     // Section 8
     // Miscellaneous
     NSArray<YMSettingsItem *> *miscItems = @[
+            YMHeader(YMLOC(@"YOUTUBE_FOCUS")),
+            YMPicker(YMLOC(@"YOUTUBE_FOCUS_DURATION"), YMLOC(@"YOUTUBE_FOCUS_DURATION_DESC"), YouTubeFocusDurationIndex, (@[YMLOC(@"FOCUS_10_MINUTES"), YMLOC(@"FOCUS_30_MINUTES"), YMLOC(@"FOCUS_1_HOUR"), YMLOC(@"FOCUS_12_HOURS")]), 1),
+            YMAction(YMLOC(@"YOUTUBE_FOCUS_START"), YMLOC(@"YOUTUBE_FOCUS_START_DESC"), ^(UIViewController *vc) {
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                NSInteger durationIndex = [defaults objectForKey:YouTubeFocusDurationIndex] ? [defaults integerForKey:YouTubeFocusDurationIndex] : 1;
+                YMYouTubeFocusStartSession(durationIndex);
+                NSArray<NSString *> *durations = @[YMLOC(@"FOCUS_10_MINUTES"), YMLOC(@"FOCUS_30_MINUTES"), YMLOC(@"FOCUS_1_HOUR"), YMLOC(@"FOCUS_12_HOURS")];
+                if (durationIndex < 0 || durationIndex >= (NSInteger)durations.count) durationIndex = 1;
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:YMLOC(@"YOUTUBE_FOCUS_STARTED_TITLE") message:[NSString stringWithFormat:YMLOC(@"YOUTUBE_FOCUS_STARTED_MESSAGE"), durations[durationIndex]] preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:YMLOC(@"OK") style:UIAlertActionStyleDefault handler:nil]];
+                [vc presentViewController:alert animated:YES completion:nil];
+            }),
+            YMAction(YMLOC(@"YOUTUBE_FOCUS_STOP"), YMLOC(@"YOUTUBE_FOCUS_STOP_DESC"), ^(UIViewController *vc) {
+                YMYouTubeFocusStopSession();
+            }),
+            YMHeader(@""),
             YMToggle(YMLOC(@"BACKGROUND_PLAYBACK"), YMLOC(@"BACKGROUND_PLAYBACK_DESC"), BackgroundPlayback),
             YMToggle(YMLOC(@"DISABLES_SHORTS_PIP"), YMLOC(@"DISABLES_SHORTS_PIP_DESC"), DisablesShortsPiP),
             YMToggle(YMLOC(@"DISABLE_HINTS"), YMLOC(@"DISABLE_HINTS_DESC"), DisableHints),
