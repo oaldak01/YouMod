@@ -66,7 +66,7 @@ static BOOL YMYouTubeFocusLibraryPivotIsSelected(void) {
 }
 
 static BOOL YMYouTubeFocusLibraryIsSelected(void) {
-    @synchronized ([YTPivotBarViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         return YMYouTubeFocusIsLibraryPivot(ymYouTubeFocusSelectedPivotID) &&
             (ymYouTubeFocusVisibleLibraryCollections.count > 0 || ymYouTubeFocusLibraryModelLoadDepth > 0);
     }
@@ -181,7 +181,7 @@ void YMYouTubeFocusStopSession(void) {
 %hook YTPivotBarViewController
 - (void)selectItemWithPivotIdentifier:(id)pivotIdentifier {
     %orig;
-    @synchronized ([YTPivotBarViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         ymYouTubeFocusSelectedPivotID = [pivotIdentifier isKindOfClass:NSString.class] ? [pivotIdentifier copy] : nil;
         if (!YMYouTubeFocusIsLibraryPivot(ymYouTubeFocusSelectedPivotID)) {
             [ymYouTubeFocusVisibleLibraryCollections removeAllObjects];
@@ -194,20 +194,20 @@ void YMYouTubeFocusStopSession(void) {
 - (void)loadWithModel:(id)model {
     BOOL isLibraryPivot = YMYouTubeFocusLibraryPivotIsSelected();
     if (isLibraryPivot) {
-        @synchronized ([YTPivotBarViewController class]) {
+        @synchronized (YMYouTubeFocusLock()) {
             ymYouTubeFocusLibraryModelLoadDepth++;
         }
     }
     %orig;
     if (isLibraryPivot) {
-        @synchronized ([YTPivotBarViewController class]) {
+        @synchronized (YMYouTubeFocusLock()) {
             if (ymYouTubeFocusLibraryModelLoadDepth > 0) ymYouTubeFocusLibraryModelLoadDepth--;
         }
     }
 }
 - (void)viewDidAppear:(BOOL)animated {
     %orig;
-    @synchronized ([YTPivotBarViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         if (!ymYouTubeFocusVisibleLibraryCollections) {
             ymYouTubeFocusVisibleLibraryCollections = [NSHashTable weakObjectsHashTable];
         }
@@ -220,7 +220,7 @@ void YMYouTubeFocusStopSession(void) {
 }
 - (void)viewDidDisappear:(BOOL)animated {
     %orig;
-    @synchronized ([YTPivotBarViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         [ymYouTubeFocusVisibleLibraryCollections removeObject:self];
     }
 }
@@ -230,7 +230,7 @@ void YMYouTubeFocusStopSession(void) {
 - (void)setContentsArray:(NSMutableArray *)contents {
     BOOL isLibraryPivot = YMYouTubeFocusLibraryPivotIsSelected();
     if (isLibraryPivot) {
-        @synchronized ([YTPivotBarViewController class]) {
+        @synchronized (YMYouTubeFocusLock()) {
             ymYouTubeFocusLibraryModelLoadDepth++;
         }
     }
@@ -245,7 +245,7 @@ void YMYouTubeFocusStopSession(void) {
             id endpoint = ((id (*)(id, SEL))objc_msgSend)(videoRenderer, endpointSelector);
             YMYouTubeFocusRememberLibraryVideoID(YMYouTubeFocusVideoIDFromEndpoint(endpoint));
         }
-        @synchronized ([YTPivotBarViewController class]) {
+        @synchronized (YMYouTubeFocusLock()) {
             if (ymYouTubeFocusLibraryModelLoadDepth > 0) ymYouTubeFocusLibraryModelLoadDepth--;
         }
     }
