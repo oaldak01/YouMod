@@ -13,6 +13,15 @@ static NSHashTable<UIViewController *> *ymYouTubeFocusVisibleLibraryCollections 
 static NSUInteger ymYouTubeFocusLibraryModelLoadDepth = 0;
 static NSTimeInterval ymYouTubeFocusLastBlockedNotice = 0;
 
+static NSObject *YMYouTubeFocusLock(void) {
+    static NSObject *lock = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        lock = [[NSObject alloc] init];
+    });
+    return lock;
+}
+
 @interface YTPlayerViewController (YouTubeFocus)
 - (void)ymYouTubeFocusEnforceCurrentVideo;
 @end
@@ -51,7 +60,7 @@ static BOOL YMYouTubeFocusIsLibraryPivot(NSString *pivotID) {
 }
 
 static BOOL YMYouTubeFocusLibraryPivotIsSelected(void) {
-    @synchronized ([YTPivotBarViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         return YMYouTubeFocusIsLibraryPivot(ymYouTubeFocusSelectedPivotID);
     }
 }
@@ -133,7 +142,7 @@ static NSString *YMYouTubeFocusVideoIDFromObject(id object) {
 
 static void YMYouTubeFocusShowBlockedNotice(YTPlayerViewController *player) {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    @synchronized ([YTPlayerViewController class]) {
+    @synchronized (YMYouTubeFocusLock()) {
         if (now - ymYouTubeFocusLastBlockedNotice < 5) return;
         ymYouTubeFocusLastBlockedNotice = now;
     }
