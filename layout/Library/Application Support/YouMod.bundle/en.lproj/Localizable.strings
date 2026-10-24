@@ -442,6 +442,22 @@
 "ZERO_TAB_DESC" = "At least 1 tab has to be enabled.";
 
 "MISCELLANEOUS" = "Miscellaneous";
+"YOUTUBE_FOCUS" = "YouTube focus";
+"YOUTUBE_FOCUS_DURATION" = "Session length";
+"YOUTUBE_FOCUS_DURATION_DESC" = "Choose how long Library playback stays available.";
+"YOUTUBE_FOCUS_START" = "Start Library-only session";
+"YOUTUBE_FOCUS_START_DESC" = "Allow videos from Library playlists, podcasts, courses, and other saved sections.";
+"YOUTUBE_FOCUS_STOP" = "Stop YouTube focus";
+"YOUTUBE_FOCUS_STOP_DESC" = "Turn off Library-only playback.";
+"YOUTUBE_FOCUS_STARTED_TITLE" = "YouTube focus started";
+"YOUTUBE_FOCUS_STARTED_MESSAGE" = "Library videos are allowed for %@.";
+"YOUTUBE_FOCUS_BLOCKED_TITLE" = "YouTube focus is on";
+"YOUTUBE_FOCUS_BLOCKED_MESSAGE" = "Open videos from Library playlists, podcasts, courses, or other saved sections during this session.";
+"FOCUS_10_MINUTES" = "10 minutes";
+"FOCUS_30_MINUTES" = "30 minutes";
+"FOCUS_1_HOUR" = "1 hour";
+"FOCUS_12_HOURS" = "12 hours";
+"OK" = "OK";
 "BACKGROUND_PLAYBACK" = "Background playback";
 "BACKGROUND_PLAYBACK_DESC" = "Enables background playback for videos.";
 "DISABLES_SHORTS_PIP" = "Disables Shorts PiP";
