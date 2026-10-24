@@ -1,5 +1,6 @@
 #import "Headers.h"
 #import <objc/message.h>
+#import <objc/runtime.h>
 #import <YouTubeHeader/YTICommand.h>
 #import <YouTubeHeader/YTICompactVideoRenderer.h>
 #import <YouTubeHeader/YTIPlaylistVideoListRenderer.h>
@@ -106,6 +107,53 @@ static void YMYouTubeFocusRememberLibraryVideoID(NSString *videoID) {
     [defaults setObject:updated forKey:YMYouTubeFocusAllowedVideoIDsKey];
 }
 
+static void YMYouTubeFocusCollectLibraryVideoIDs(id object, NSHashTable *visitedObjects, NSUInteger depth, NSUInteger *visitedCount) {
+    if (!object || !visitedObjects || !visitedCount || depth > 24 || *visitedCount >= 10000) return;
+    if ([object isKindOfClass:NSString.class] ||
+        [object isKindOfClass:NSNumber.class] ||
+        [object isKindOfClass:NSData.class] ||
+        [object isKindOfClass:NSDate.class]) return;
+    if ([visitedObjects containsObject:object]) return;
+    [visitedObjects addObject:object];
+    (*visitedCount)++;
+
+    NSString *videoID = YMYouTubeFocusStringFromObject(object, @"videoId");
+    if (videoID.length) YMYouTubeFocusRememberLibraryVideoID(videoID);
+
+    if ([object isKindOfClass:NSArray.class]) {
+        for (id child in (NSArray *)object) {
+            YMYouTubeFocusCollectLibraryVideoIDs(child, visitedObjects, depth + 1, visitedCount);
+        }
+        return;
+    }
+    if ([object isKindOfClass:NSDictionary.class]) {
+        for (id child in [(NSDictionary *)object allValues]) {
+            YMYouTubeFocusCollectLibraryVideoIDs(child, visitedObjects, depth + 1, visitedCount);
+        }
+        return;
+    }
+
+    NSString *className = NSStringFromClass(object_getClass(object));
+    if (![className hasPrefix:@"YTI"] && ![className hasPrefix:@"YT"] && ![className hasPrefix:@"GPB"]) return;
+
+    for (Class currentClass = object_getClass(object);
+         currentClass && currentClass != NSObject.class;
+         currentClass = class_getSuperclass(currentClass)) {
+        unsigned int ivarCount = 0;
+        Ivar *ivars = class_copyIvarList(currentClass, &ivarCount);
+        for (unsigned int index = 0; index < ivarCount; index++) {
+            Ivar ivar = ivars[index];
+            const char *typeEncoding = ivar_getTypeEncoding(ivar);
+            if (!typeEncoding || typeEncoding[0] != '@' || typeEncoding[1] == '?') continue;
+            id child = object_getIvar(object, ivar);
+            if (child && child != object) {
+                YMYouTubeFocusCollectLibraryVideoIDs(child, visitedObjects, depth + 1, visitedCount);
+            }
+        }
+        free(ivars);
+    }
+}
+
 static BOOL YMYouTubeFocusAllowsVideoID(NSString *videoID) {
     if (!videoID.length) return NO;
     return [[YMYouTubeFocusDefaults() arrayForKey:YMYouTubeFocusAllowedVideoIDsKey] containsObject:videoID];
@@ -197,6 +245,9 @@ void YMYouTubeFocusStopSession(void) {
         @synchronized (YMYouTubeFocusLock()) {
             ymYouTubeFocusLibraryModelLoadDepth++;
         }
+        NSHashTable *visitedObjects = [NSHashTable hashTableWithOptions:(NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality)];
+        NSUInteger visitedCount = 0;
+        YMYouTubeFocusCollectLibraryVideoIDs(model, visitedObjects, 0, &visitedCount);
     }
     %orig;
     if (isLibraryPivot) {
